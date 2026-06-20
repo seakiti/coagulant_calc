@@ -1,0 +1,584 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<meta name="description" content="คำนวณปริมาณสารจับตะกอนที่ต้องใช้ จากพื้นที่บ่อ ขนาดบ่อ ปริมาตรน้ำ ลิตร หรือตัน">
+<meta name="theme-color" content="#0f1117">
+<title>คำนวณสารจับตะกอน</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🧪</text></svg>">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #0f1117;
+  --surface: #181c27;
+  --surface2: #1e2335;
+  --accent: #6c63ff;
+  --accent2: #38bdf8;
+  --accent-glow: rgba(108,99,255,0.18);
+  --text: #f0f2ff;
+  --text-sec: #8890aa;
+  --text-dim: #4a5070;
+  --border: rgba(255,255,255,0.07);
+  --radius: 16px;
+  --radius-sm: 10px;
+  --radius-xs: 7px;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+body { font-family: 'IBM Plex Sans Thai', 'Sarabun', 'Noto Sans Thai', system-ui, sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; padding-bottom: 48px; }
+
+header {
+  padding: 20px 20px 16px;
+  border-bottom: 1px solid var(--border);
+  position: sticky; top: 0; z-index: 10;
+  background: rgba(15,17,23,0.92);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+.header-inner { max-width: 480px; margin: 0 auto; display: flex; align-items: center; gap: 12px; }
+.logo-dot { width: 36px; height: 36px; border-radius: 10px; background: linear-gradient(135deg, var(--accent), var(--accent2)); display: flex; align-items: center; justify-content: center; font-size: 18px; flex-shrink: 0; }
+header h1 { font-size: 16px; font-weight: 600; color: var(--text); }
+header p { font-size: 12px; color: var(--text-sec); margin-top: 1px; }
+
+.content { padding: 18px 16px; max-width: 480px; margin: 0 auto; }
+
+.tabs { display: flex; gap: 6px; overflow-x: auto; padding-bottom: 2px; margin-bottom: 18px; scrollbar-width: none; }
+.tabs::-webkit-scrollbar { display: none; }
+.tab {
+  flex-shrink: 0; padding: 7px 14px; border-radius: 999px;
+  font-size: 13px; font-weight: 500;
+  border: 1px solid var(--border); background: var(--surface); color: var(--text-sec);
+  cursor: pointer; transition: all 0.18s; font-family: 'IBM Plex Sans Thai', sans-serif;
+}
+.tab.active { background: var(--accent); color: #fff; border-color: var(--accent); box-shadow: 0 0 16px var(--accent-glow); }
+.tab:not(.active):hover { border-color: rgba(255,255,255,0.15); color: var(--text); }
+
+.card { background: var(--surface); border-radius: var(--radius); padding: 20px; border: 1px solid var(--border); margin-bottom: 14px; }
+.panel { display: none; }
+.panel.active { display: block; }
+
+.sec-label { font-size: 11px; font-weight: 600; letter-spacing: 1.2px; color: var(--text-dim); text-transform: uppercase; margin-bottom: 14px; }
+
+.field { margin-bottom: 12px; }
+.field label { display: block; font-size: 12px; font-weight: 500; color: var(--text-sec); margin-bottom: 6px; }
+.field input {
+  width: 100%; padding: 12px 14px;
+  border: 1px solid var(--border); border-radius: var(--radius-xs);
+  font-size: 16px; font-family: 'IBM Plex Sans Thai', sans-serif;
+  color: var(--text); background: var(--surface2);
+  transition: border-color 0.15s, box-shadow 0.15s; -webkit-appearance: none;
+}
+.field input:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-glow); background: #222840; }
+.field input::placeholder { color: var(--text-dim); }
+.row3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; }
+
+.btn-calc {
+  width: 100%; padding: 14px;
+  background: linear-gradient(135deg, var(--accent) 0%, #5b52e8 100%);
+  color: #fff; border: none; border-radius: var(--radius-xs);
+  font-size: 15px; font-weight: 600; font-family: 'IBM Plex Sans Thai', sans-serif;
+  cursor: pointer; letter-spacing: 0.3px;
+  transition: opacity 0.15s, transform 0.1s;
+  box-shadow: 0 4px 20px var(--accent-glow); margin-top: 4px;
+}
+.btn-calc:active { transform: scale(0.97); opacity: 0.88; }
+
+.err-msg {
+  display: none; font-size: 13px;
+  color: #ff6b6b; background: rgba(255,107,107,0.1);
+  border: 1px solid rgba(255,107,107,0.2);
+  border-radius: var(--radius-xs); padding: 10px 14px; margin-top: 10px;
+}
+
+/* result */
+.result-card { display: none; background: var(--surface); border-radius: var(--radius); border: 1px solid var(--border); overflow: hidden; margin-bottom: 14px; }
+.result-hero {
+  background: linear-gradient(135deg, #1a1f35 0%, #1c2040 100%);
+  border-bottom: 1px solid var(--border);
+  padding: 28px 20px 22px; text-align: center; position: relative;
+}
+.result-hero::before { content: ''; position: absolute; inset: 0; background: radial-gradient(ellipse at 50% 0%, rgba(108,99,255,0.12) 0%, transparent 70%); pointer-events: none; }
+.bags-num { font-size: 72px; font-weight: 700; color: #fff; line-height: 1; letter-spacing: -2px; text-shadow: 0 0 40px rgba(108,99,255,0.4); }
+.bags-label { font-size: 14px; color: var(--text-sec); margin-top: 4px; }
+.kg-badge { display: inline-flex; align-items: center; gap: 5px; margin-top: 12px; background: rgba(56,189,248,0.12); border: 1px solid rgba(56,189,248,0.25); color: var(--accent2); font-size: 13px; font-weight: 600; padding: 5px 16px; border-radius: 999px; }
+
+.dims { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1px; background: var(--border); border-bottom: 1px solid var(--border); }
+.dim-item { background: var(--surface2); padding: 14px 8px; text-align: center; }
+.dim-val { font-size: 20px; font-weight: 700; color: var(--text); }
+.dim-unit { font-size: 10px; color: var(--text-dim); margin-top: 1px; letter-spacing: 0.5px; }
+.dim-name { font-size: 11px; color: var(--text-sec); margin-top: 3px; }
+
+/* pond 3D */
+.pond-wrap { padding: 16px 12px 10px; text-align: center; background: var(--surface2); }
+.pond-wrap svg { width: 100%; max-width: 320px; height: auto; }
+
+/* pond illustration (volume-only modes) */
+.pond-illus {
+  padding: 20px 16px 16px; background: var(--surface2);
+  display: flex; flex-direction: column; align-items: center; gap: 14px;
+}
+.illus-svg { width: 100%; max-width: 280px; }
+.vol-info { display: flex; gap: 10px; width: 100%; }
+.vol-chip {
+  flex: 1; background: rgba(108,99,255,0.1); border: 1px solid rgba(108,99,255,0.22);
+  border-radius: var(--radius-xs); padding: 10px 8px; text-align: center;
+}
+.vol-chip .vc-val { font-size: 15px; font-weight: 700; color: var(--accent2); }
+.vol-chip .vc-lab { font-size: 10px; color: var(--text-dim); margin-top: 2px; letter-spacing: 0.4px; }
+
+.ref-note { font-size: 11px; color: var(--text-dim); text-align: center; padding: 10px 16px 14px; line-height: 1.6; background: var(--surface2); }
+
+.ask-note {
+  display: none; align-items: flex-start; gap: 10px;
+  margin: 0 16px 16px; padding: 12px 14px;
+  background: rgba(255,184,77,0.08);
+  border: 1px solid rgba(255,184,77,0.25);
+  border-radius: var(--radius-xs);
+}
+.ask-note .ai { font-size: 17px; line-height: 1.3; flex-shrink: 0; }
+.ask-note .at { font-size: 12px; color: #ffcc80; line-height: 1.6; text-align: left; }
+.ask-note .at b { color: #ffd699; font-weight: 600; }
+
+/* action buttons under result */
+.result-actions { display: flex; gap: 8px; padding: 14px 16px 18px; background: var(--surface2); }
+.btn-action {
+  flex: 1; padding: 11px; border-radius: var(--radius-xs);
+  font-size: 13px; font-weight: 600; font-family: inherit;
+  cursor: pointer; transition: opacity 0.15s, transform 0.1s;
+  display: flex; align-items: center; justify-content: center; gap: 6px;
+}
+.btn-action:active { transform: scale(0.97); }
+.btn-copy { background: rgba(56,189,248,0.12); border: 1px solid rgba(56,189,248,0.3); color: var(--accent2); }
+.btn-reset { background: rgba(255,255,255,0.05); border: 1px solid var(--border); color: var(--text-sec); }
+.btn-copy.copied { background: rgba(76,217,100,0.15); border-color: rgba(76,217,100,0.4); color: #4cd964; }
+
+.field-warn {
+  font-size: 11px; color: #ffb84d; margin-top: 4px; display: none;
+}
+</style>
+</head>
+<body>
+<header>
+  <div class="header-inner">
+    <div class="logo-dot">🧪</div>
+    <div>
+      <h1>สารจับตะกอน</h1>
+      <p>คำนวณจำนวนกระสอบที่ต้องใช้</p>
+    </div>
+  </div>
+</header>
+
+<div class="content">
+  <div class="tabs">
+    <button class="tab active" onclick="switchTab('rai')">ไร่ / งาน / วา</button>
+    <button class="tab" onclick="switchTab('wly')">กว้าง × ยาว × ลึก</button>
+    <button class="tab" onclick="switchTab('m3')">คิว (ม³)</button>
+    <button class="tab" onclick="switchTab('liter')">ลิตร</button>
+    <button class="tab" onclick="switchTab('ton')">ตัน</button>
+  </div>
+
+  <div class="card">
+    <!-- ไร่/งาน/วา -->
+    <div id="panel-rai" class="panel active">
+      <p class="sec-label">พื้นที่บ่อ</p>
+      <div class="row3">
+        <div class="field"><label>ไร่</label><input type="number" id="r-rai" min="0" value="0" step="1" inputmode="decimal"></div>
+        <div class="field"><label>งาน</label><input type="number" id="r-ngan" min="0" value="1" step="1" inputmode="decimal"></div>
+        <div class="field"><label>ตร.วา</label><input type="number" id="r-wa" min="0" value="0" step="1" inputmode="decimal"></div>
+      </div>
+      <div class="field"><label>ความลึก (เมตร)</label><input type="number" id="r-deep" min="0.1" value="2" step="0.1" inputmode="decimal" oninput="checkDepth(this)"></div>
+      <p class="field-warn" id="warn-r-deep">⚠️ ความลึกดูเยอะผิดปกติ กรุณาตรวจสอบอีกครั้ง</p>
+      <button class="btn-calc" onclick="calc('rai')">คำนวณจำนวนกระสอบ</button>
+    </div>
+    <!-- กว้าง×ยาว×ลึก -->
+    <div id="panel-wly" class="panel">
+      <p class="sec-label">ขนาดบ่อ</p>
+      <div class="row3">
+        <div class="field"><label>กว้าง (ม.)</label><input type="number" id="w-w" min="0.1" step="0.5" inputmode="decimal" placeholder="10"></div>
+        <div class="field"><label>ยาว (ม.)</label><input type="number" id="w-l" min="0.1" step="0.5" inputmode="decimal" placeholder="40"></div>
+        <div class="field"><label>ลึก (ม.)</label><input type="number" id="w-d" min="0.1" value="2" step="0.1" inputmode="decimal" oninput="checkDepth(this)"></div>
+      </div>
+      <p class="field-warn" id="warn-w-d">⚠️ ความลึกดูเยอะผิดปกติ กรุณาตรวจสอบอีกครั้ง</p>
+      <button class="btn-calc" onclick="calc('wly')">คำนวณจำนวนกระสอบ</button>
+    </div>
+    <!-- คิว -->
+    <div id="panel-m3" class="panel">
+      <p class="sec-label">ปริมาตรน้ำ</p>
+      <div class="field"><label>คิว / ลูกบาศก์เมตร (ม³)</label><input type="number" id="v-m3" min="1" step="10" inputmode="decimal" placeholder="เช่น 800"></div>
+      <button class="btn-calc" onclick="calc('m3')">คำนวณจำนวนกระสอบ</button>
+    </div>
+    <!-- ลิตร -->
+    <div id="panel-liter" class="panel">
+      <p class="sec-label">ปริมาตรน้ำ</p>
+      <div class="field"><label>ลิตร</label><input type="number" id="l-lit" min="1" step="1000" inputmode="decimal" placeholder="เช่น 800000"></div>
+      <button class="btn-calc" onclick="calc('liter')">คำนวณจำนวนกระสอบ</button>
+    </div>
+    <!-- ตัน -->
+    <div id="panel-ton" class="panel">
+      <p class="sec-label">น้ำหนักน้ำ</p>
+      <div class="field"><label>ตัน (1 ตัน ≈ 1 ม³)</label><input type="number" id="t-ton" min="1" step="10" inputmode="decimal" placeholder="เช่น 800"></div>
+      <button class="btn-calc" onclick="calc('ton')">คำนวณจำนวนกระสอบ</button>
+    </div>
+
+    <p class="err-msg" id="err-msg">⚠️ กรุณากรอกข้อมูลให้ครบถ้วน</p>
+    <button class="btn-action btn-reset" style="margin-top:10px;width:100%" onclick="resetAll()">↺ ล้างค่าทั้งหมด</button>
+  </div>
+
+  <!-- Result: มีขนาดจริง (ไร่/งาน/วา และ กว้าง×ยาว×ลึก) -->
+  <div class="result-card" id="result-card-3d">
+    <div class="result-hero">
+      <div class="bags-num" id="bags-num-3d">—</div>
+      <div class="bags-label">กระสอบ (5 กก./กระสอบ)</div>
+      <div class="kg-badge" id="kg-badge-3d">— กิโลกรัม</div>
+    </div>
+    <div class="dims">
+      <div class="dim-item"><div class="dim-val" id="d-w">—</div><div class="dim-unit">METRE</div><div class="dim-name">กว้าง</div></div>
+      <div class="dim-item"><div class="dim-val" id="d-l">—</div><div class="dim-unit">METRE</div><div class="dim-name">ยาว</div></div>
+      <div class="dim-item"><div class="dim-val" id="d-d">—</div><div class="dim-unit">METRE</div><div class="dim-name">ลึก</div></div>
+    </div>
+    <div class="pond-wrap">
+      <svg id="pond-svg-3d" viewBox="0 0 320 180" xmlns="http://www.w3.org/2000/svg"></svg>
+    </div>
+    <p class="ref-note">อัตราอ้างอิง: 800 ม³ → 1 กระสอบ (5 กก.) หรือ 160 ม³ → 1 กก. (ใช้คำนวณบ่อเล็ก)</p>
+    <div class="ask-note" id="ask-note-3d">
+      <span class="ai">💬</span>
+      <span class="at"><b>คาดว่าน่าจะเป็นบ่อปูน</b> (ปริมาณน้อยกว่า 1 กระสอบ) ควรถามลูกค้ายืนยันว่าเป็น<b>บ่อปูน</b>จริงหรือไม่ และมี<b>ระบบกรองน้ำ</b>หรือไม่ เพราะมีผลต่อปริมาณสารที่ควรใช้</span>
+    </div>
+    <div class="result-actions">
+      <button class="btn-action btn-copy" id="copy-btn-3d" onclick="copyResult('3d')">📋 คัดลอกผลลัพธ์</button>
+      <button class="btn-action btn-reset" onclick="resetAll()">↺ ล้างค่า</button>
+    </div>
+  </div>
+
+  <!-- Result: ปริมาตรอย่างเดียว (คิว/ลิตร/ตัน) -->
+  <div class="result-card" id="result-card-vol">
+    <div class="result-hero">
+      <div class="bags-num" id="bags-num-vol">—</div>
+      <div class="bags-label">กระสอบ (5 กก./กระสอบ)</div>
+      <div class="kg-badge" id="kg-badge-vol">— กิโลกรัม</div>
+    </div>
+    <div class="pond-illus">
+      <svg class="illus-svg" id="pond-illus-svg" viewBox="0 0 280 140" xmlns="http://www.w3.org/2000/svg"></svg>
+      <div class="vol-info">
+        <div class="vol-chip"><div class="vc-val" id="vi-m3">—</div><div class="vc-lab">ลูกบาศก์เมตร (ม³)</div></div>
+        <div class="vol-chip"><div class="vc-val" id="vi-lit">—</div><div class="vc-lab">ลิตร</div></div>
+        <div class="vol-chip"><div class="vc-val" id="vi-ton">—</div><div class="vc-lab">ตัน (โดยประมาณ)</div></div>
+      </div>
+    </div>
+    <p class="ref-note">อัตราอ้างอิง: 800 ม³ → 1 กระสอบ (5 กก.) หรือ 160 ม³ → 1 กก. &nbsp;|&nbsp; ขนาดบ่อจริงขึ้นอยู่กับรูปทรง</p>
+    <div class="ask-note" id="ask-note-vol">
+      <span class="ai">💬</span>
+      <span class="at"><b>คาดว่าน่าจะเป็นบ่อปูน</b> (ปริมาณน้อยกว่า 1 กระสอบ) ควรถามลูกค้ายืนยันว่าเป็น<b>บ่อปูน</b>จริงหรือไม่ และมี<b>ระบบกรองน้ำ</b>หรือไม่ เพราะมีผลต่อปริมาณสารที่ควรใช้</span>
+    </div>
+    <div class="result-actions">
+      <button class="btn-action btn-copy" id="copy-btn-vol" onclick="copyResult('vol')">📋 คัดลอกผลลัพธ์</button>
+      <button class="btn-action btn-reset" onclick="resetAll()">↺ ล้างค่า</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const RAI=1600, NGAN=400, WA=4, REF_VOL=800;
+const M3_PER_KG = REF_VOL/5; // 160 ม³ ต่อ 1 กก.
+let lastResult = null;
+
+function switchTab(id) {
+  document.querySelectorAll('.tab').forEach((t,i) =>
+    t.classList.toggle('active', ['rai','wly','m3','liter','ton'][i]===id));
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  document.getElementById('panel-'+id).classList.add('active');
+  document.getElementById('result-card-3d').style.display = 'none';
+  document.getElementById('result-card-vol').style.display = 'none';
+  document.getElementById('err-msg').style.display = 'none';
+}
+
+function showErr(msg) {
+  const e = document.getElementById('err-msg');
+  e.textContent = '⚠️ ' + (msg||'กรุณากรอกข้อมูลให้ครบถ้วน');
+  e.style.display = 'block';
+  document.getElementById('result-card-3d').style.display = 'none';
+  document.getElementById('result-card-vol').style.display = 'none';
+}
+
+function v(id) { return parseFloat(document.getElementById(id).value); }
+
+function checkDepth(input) {
+  const warnEl = document.getElementById('warn-'+input.id);
+  if (!warnEl) return;
+  const val = parseFloat(input.value);
+  warnEl.style.display = (val && val > 10) ? 'block' : 'none';
+}
+
+function resetAll() {
+  document.querySelectorAll('.field input[type="number"]').forEach(inp => {
+    inp.value = inp.hasAttribute('value') ? inp.getAttribute('value') : '';
+  });
+  document.querySelectorAll('.field-warn').forEach(w => w.style.display='none');
+  document.getElementById('err-msg').style.display = 'none';
+  document.getElementById('result-card-3d').style.display = 'none';
+  document.getElementById('result-card-vol').style.display = 'none';
+  lastResult = null;
+}
+
+function copyResult(suffix) {
+  if (!lastResult) return;
+  const r = lastResult;
+  let text = '';
+  const dateStr = new Date().toLocaleDateString('th-TH', {day:'numeric', month:'short', year:'numeric'});
+  text += '🧪 สรุปการใช้สารจับตะกอน\n';
+  text += '— — — — — — — — —\n';
+  if (r.suffix === '3d') {
+    text += `ขนาดบ่อ: กว้าง ${r.w.toFixed(1)} ม. × ยาว ${r.l.toFixed(1)} ม. × ลึก ${r.depth.toFixed(1)} ม.\n`;
+    text += `ปริมาตรน้ำ: ${r.vol.toLocaleString('th',{maximumFractionDigits:1})} ม³\n`;
+  } else {
+    text += `ปริมาตรน้ำ: ${r.vol.toLocaleString('th',{maximumFractionDigits:1})} ม³ (≈ ${(r.vol*1000).toLocaleString('th',{maximumFractionDigits:0})} ลิตร)\n`;
+  }
+  if (r.kgPrecise < 5) {
+    const grams = r.kgPrecise*1000;
+    if (grams < 1000) {
+      text += `สารที่ควรใช้: ${grams.toFixed(0)} กรัม (ไม่ถึง 1 กระสอบ)\n`;
+    } else {
+      text += `สารที่ควรใช้: ${r.kgPrecise.toFixed(2)} กิโลกรัม (ไม่ถึง 1 กระสอบ)\n`;
+    }
+    text += 'หมายเหตุ: คาดว่าเป็นบ่อปูน — กรุณายืนยันกับลูกค้าเรื่องบ่อปูน/ระบบกรองน้ำ\n';
+  } else {
+    text += `ปริมาณที่ใช้: ${r.bags} กระสอบ (${r.kg.toLocaleString()} กก.)\n`;
+    text += `น้ำหนักจริงโดยประมาณ: ${r.kgPrecise.toFixed(2)} กก.\n`;
+  }
+  text += '— — — — — — — — —\n';
+  text += `${dateStr}`;
+
+  const btn = document.getElementById('copy-btn-'+suffix);
+  const finish = (ok) => {
+    if (!btn) return;
+    const original = '📋 คัดลอกผลลัพธ์';
+    btn.textContent = ok ? '✓ คัดลอกแล้ว' : '✗ คัดลอกไม่สำเร็จ';
+    btn.classList.toggle('copied', ok);
+    setTimeout(()=>{ btn.textContent = original; btn.classList.remove('copied'); }, 1800);
+  };
+
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(text).then(()=>finish(true)).catch(()=>finish(false));
+  } else {
+    try {
+      const ta = document.createElement('textarea');
+      ta.value = text; ta.style.position='fixed'; ta.style.opacity='0';
+      document.body.appendChild(ta); ta.focus(); ta.select();
+      document.execCommand('copy');
+      document.body.removeChild(ta);
+      finish(true);
+    } catch(e) { finish(false); }
+  }
+}
+
+function calc(mode) {
+  document.getElementById('err-msg').style.display = 'none';
+  let vol=0, depth=null, w=null, l=null;
+  let volOnly = false;
+
+  if (mode==='rai') {
+    const area=(v('r-rai')||0)*RAI+(v('r-ngan')||0)*NGAN+(v('r-wa')||0)*WA;
+    depth=v('r-deep');
+    if (!depth||depth<=0) return showErr('กรุณากรอกความลึกให้ถูกต้อง');
+    if (area<=0) return showErr('กรุณากรอกขนาดพื้นที่อย่างน้อย 1 ค่า');
+    vol=area*depth; w=Math.sqrt(area); l=w;
+  } else if (mode==='wly') {
+    w=v('w-w'); l=v('w-l'); depth=v('w-d');
+    if (!w||!l||!depth||w<=0||l<=0||depth<=0) return showErr('กรุณากรอกกว้าง ยาว และลึกให้ครบ');
+    vol=w*l*depth;
+  } else if (mode==='m3') {
+    vol=v('v-m3');
+    if (!vol||vol<=0) return showErr('กรุณากรอกปริมาตรน้ำ');
+    volOnly=true;
+  } else if (mode==='liter') {
+    const lit=v('l-lit');
+    if (!lit||lit<=0) return showErr('กรุณากรอกปริมาตรน้ำ (ลิตร)');
+    vol=lit/1000; volOnly=true;
+  } else if (mode==='ton') {
+    const ton=v('t-ton');
+    if (!ton||ton<=0) return showErr('กรุณากรอกน้ำหนักน้ำ (ตัน)');
+    vol=ton; volOnly=true;
+  }
+
+  const kgPrecise = vol / M3_PER_KG;
+  const bags=Math.ceil(vol/REF_VOL);
+  const kg=bags*5;
+
+  if (volOnly) {
+    renderResult('vol', vol, kgPrecise, bags, kg);
+    document.getElementById('vi-m3').textContent=vol.toLocaleString('th',{maximumFractionDigits:1});
+    document.getElementById('vi-lit').textContent=(vol*1000).toLocaleString('th',{maximumFractionDigits:0});
+    document.getElementById('vi-ton').textContent=vol.toLocaleString('th',{maximumFractionDigits:1});
+    drawIllus(vol);
+    document.getElementById('result-card-vol').style.display='block';
+    document.getElementById('result-card-3d').style.display='none';
+    lastResult = {suffix:'vol', vol, kgPrecise, bags, kg, w:null, l:null, depth:null};
+    setTimeout(()=>document.getElementById('result-card-vol').scrollIntoView({behavior:'smooth',block:'nearest'}),50);
+  } else {
+    if (!w) { w=Math.sqrt(vol/depth); l=w; }
+    renderResult('3d', vol, kgPrecise, bags, kg);
+    document.getElementById('d-w').textContent=w.toFixed(1);
+    document.getElementById('d-l').textContent=l.toFixed(1);
+    document.getElementById('d-d').textContent=depth.toFixed(1);
+    drawPond3d(w,l,depth);
+    document.getElementById('result-card-3d').style.display='block';
+    document.getElementById('result-card-vol').style.display='none';
+    lastResult = {suffix:'3d', vol, kgPrecise, bags, kg, w, l, depth};
+    setTimeout(()=>document.getElementById('result-card-3d').scrollIntoView({behavior:'smooth',block:'nearest'}),50);
+  }
+}
+
+function renderResult(suffix, vol, kgPrecise, bags, kg) {
+  const small = kgPrecise < 5;
+  const bagsEl = document.getElementById('bags-num-'+suffix);
+  const labelEl = bagsEl.nextElementSibling;
+  const badgeEl = document.getElementById('kg-badge-'+suffix);
+  const askEl = document.getElementById('ask-note-'+suffix);
+
+  askEl.style.display = small ? 'flex' : 'none';
+
+  if (small) {
+    // บ่อเล็กกว่า 1 กระสอบ -> โชว์กรัม/กก. แบบละเอียดเป็นตัวหลัก
+    const grams = kgPrecise*1000;
+    let primary, primaryUnit;
+    if (grams < 1000) {
+      primary = grams.toFixed(0);
+      primaryUnit = 'กรัม';
+    } else {
+      primary = kgPrecise.toFixed(2);
+      primaryUnit = 'กิโลกรัม';
+    }
+    bagsEl.textContent = primary;
+    labelEl.textContent = 'สารที่ควรใช้ (' + primaryUnit + ')';
+    badgeEl.textContent = 'ไม่ถึง 1 กระสอบ — ใช้ตวงแบบละเอียด';
+  } else {
+    bagsEl.textContent = bags;
+    labelEl.textContent = 'กระสอบ (5 กก./กระสอบ)';
+    badgeEl.textContent = kgPrecise.toFixed(2).replace(/\.00$/,'') + ' กก. โดยประมาณ (ปัดเป็น ' + kg + ' กก.)';
+  }
+}
+
+/* ---- วาดรูปบ่อ illustration สำหรับ volume-only ---- */
+function drawIllus(vol) {
+  const svg = document.getElementById('pond-illus-svg');
+  // บ่อแบบ top-down view + ตัวเลขปริมาตร
+  // คำนวณ fill ratio เทียบ REF_VOL (800 m³ = 1 bag)
+  const ratio = Math.min(vol / (Math.ceil(vol/REF_VOL)*REF_VOL), 1);
+  const waterRatio = 0.35 + ratio * 0.55; // ระดับน้ำ 35%–90% ของความสูง
+
+  const W=280, H=140;
+  // perspective trapezoid pond
+  const bx=30, by=30, bw=220, bh=85;
+  const tilt=22;
+  // outer rim
+  const topL=[bx+tilt, by];
+  const topR=[bx+bw-tilt, by];
+  const botR=[bx+bw, by+bh];
+  const botL=[bx, by+bh];
+  // water surface (scaled by waterRatio from bottom)
+  const wy = by + bh*(1-waterRatio);
+  const wTilt = tilt*(1-waterRatio);
+  const wTopL=[bx+wTilt, wy];
+  const wTopR=[bx+bw-wTilt, wy];
+  const wBotR=[bx+bw, by+bh];
+  const wBotL=[bx, by+bh];
+
+  function pts(arr){ return arr.map(p=>p.join(',')).join(' '); }
+
+  // ground color strips
+  const rimH = 10;
+
+  svg.innerHTML=`
+    <defs>
+      <linearGradient id="ig" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0%" stop-color="#6c63ff" stop-opacity="0.55"/>
+        <stop offset="100%" stop-color="#38bdf8" stop-opacity="0.75"/>
+      </linearGradient>
+      <linearGradient id="rimG" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0%" stop-color="#2a2f4a"/>
+        <stop offset="100%" stop-color="#1e2335"/>
+      </linearGradient>
+      <linearGradient id="topWater" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0%" stop-color="#38bdf8" stop-opacity="0.6"/>
+        <stop offset="100%" stop-color="#6c63ff" stop-opacity="0.35"/>
+      </linearGradient>
+    </defs>
+
+    <!-- ขอบบ่อ/ดิน -->
+    <polygon points="${pts([topL,topR,botR,botL])}" fill="url(#rimG)" stroke="#3a3f60" stroke-width="1.5"/>
+
+    <!-- น้ำ -->
+    <polygon points="${pts([wTopL,wTopR,wBotR,wBotL])}" fill="url(#ig)" opacity="0.92"/>
+
+    <!-- ผิวน้ำ (top face highlight) -->
+    <polygon points="${pts([wTopL,wTopR,[bx+bw-wTilt-8,wy+6],[bx+wTilt+8,wy+6]])}" fill="url(#topWater)" opacity="0.6"/>
+
+    <!-- เส้นขอบ -->
+    <polygon points="${pts([topL,topR,botR,botL])}" fill="none" stroke="#4a5080" stroke-width="1.5"/>
+    <line x1="${wTopL[0]}" y1="${wTopL[1]}" x2="${wTopR[0]}" y2="${wTopR[1]}" stroke="#38bdf8" stroke-width="1.2" opacity="0.8"/>
+
+    <!-- ลูกศรระดับน้ำ -->
+    <line x1="${bx-10}" y1="${wy}" x2="${bx-10}" y2="${by+bh}" stroke="#6c63ff" stroke-width="1.5" stroke-dasharray="3,2"/>
+    <polygon points="${bx-10},${wy-1} ${bx-14},${wy+7} ${bx-6},${wy+7}" fill="#6c63ff" opacity="0.8"/>
+    <line x1="${bx-14}" y1="${by+bh}" x2="${bx-6}" y2="${by+bh}" stroke="#6c63ff" stroke-width="1.5"/>
+
+    <!-- label น้ำ -->
+    <text x="${(wTopL[0]+botR[0])/2}" y="${(wy+by+bh)/2+5}" fill="#38bdf8" font-size="13" font-weight="600" text-anchor="middle" font-family="IBM Plex Sans Thai,sans-serif" opacity="0.95">น้ำ</text>
+
+    <!-- watermark ปริมาตร -->
+    <text x="${W/2}" y="${H-6}" fill="#4a5070" font-size="10" text-anchor="middle" font-family="IBM Plex Sans Thai,sans-serif">ภาพแสดงสัดส่วนปริมาณน้ำโดยประมาณ</text>
+  `;
+}
+
+/* ---- วาดรูปบ่อ 3D จริง ---- */
+function drawPond3d(w,l,d) {
+  const svg=document.getElementById('pond-svg-3d');
+  const ox=28,oy=16,pw=210,ph=88,skx=54,sky=26;
+  const wl=0.82;
+  function p(pts){return pts.map(pt=>pt[0]+','+pt[1]).join(' ');}
+  const dimY=oy+sky+ph+16, dimX=ox+pw+skx+12;
+  const wSideApprox=[[ox+pw,oy+sky+ph*(1-wl)],[ox+pw+skx*wl,oy+sky*(1-wl)+ph*(1-wl)],[ox+pw+skx*wl,oy+sky*(1-wl)+ph*(1-wl)+ph*wl],[ox+pw,oy+sky+ph]];
+  svg.innerHTML=`
+    <defs>
+      <linearGradient id="wg3d" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0%" stop-color="#6c63ff" stop-opacity="0.5"/>
+        <stop offset="100%" stop-color="#38bdf8" stop-opacity="0.65"/>
+      </linearGradient>
+      <linearGradient id="wg2_3d" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0%" stop-color="#6c63ff" stop-opacity="0.3"/>
+        <stop offset="100%" stop-color="#38bdf8" stop-opacity="0.5"/>
+      </linearGradient>
+    </defs>
+    <polygon points="${p([[ox+skx,oy],[ox+skx+pw,oy],[ox+pw,oy+sky],[ox,oy+sky]])}" fill="#1e2335" stroke="#3a3f60" stroke-width="1.2"/>
+    <polygon points="${p(wSideApprox)}" fill="url(#wg2_3d)" stroke="#6c63ff" stroke-width="0.8" opacity="0.85"/>
+    <polygon points="${p([[ox,oy+sky+ph*(1-wl)],[ox+pw,oy+sky+ph*(1-wl)],[ox+pw,oy+sky+ph],[ox,oy+sky+ph]])}" fill="url(#wg3d)" stroke="#6c63ff" stroke-width="0.8" opacity="0.9"/>
+    <polygon points="${p([[ox+skx*wl,oy+sky*(1-wl)],[ox+skx*wl+pw,oy+sky*(1-wl)],[ox+pw,oy+sky],[ox,oy+sky]])}" fill="#38bdf8" stroke="#38bdf8" stroke-width="1" opacity="0.35"/>
+    <polygon points="${p([[ox,oy+sky],[ox+pw,oy+sky],[ox+pw,oy+sky+ph],[ox,oy+sky+ph]])}" fill="#1e2335" stroke="#3a3f60" stroke-width="1.2" fill-opacity="0.15"/>
+    <polygon points="${p([[ox+pw,oy+sky],[ox+pw+skx,oy],[ox+pw+skx,oy+ph],[ox+pw,oy+sky+ph]])}" fill="#1a1f35" stroke="#3a3f60" stroke-width="1.2" fill-opacity="0.25"/>
+    <line x1="${ox}" y1="${oy+sky}" x2="${ox+pw}" y2="${oy+sky}" stroke="#4a5080" stroke-width="1.2"/>
+    <line x1="${ox}" y1="${oy+sky+ph}" x2="${ox+pw}" y2="${oy+sky+ph}" stroke="#4a5080" stroke-width="1.2"/>
+    <line x1="${ox}" y1="${oy+sky}" x2="${ox}" y2="${oy+sky+ph}" stroke="#4a5080" stroke-width="1.2"/>
+    <line x1="${ox+pw}" y1="${oy+sky}" x2="${ox+pw}" y2="${oy+sky+ph}" stroke="#4a5080" stroke-width="1.2"/>
+    <line x1="${ox+pw}" y1="${oy+sky}" x2="${ox+pw+skx}" y2="${oy}" stroke="#4a5080" stroke-width="1.2"/>
+    <line x1="${ox+pw}" y1="${oy+sky+ph}" x2="${ox+pw+skx}" y2="${oy+ph}" stroke="#4a5080" stroke-width="1.2"/>
+    <line x1="${ox+pw+skx}" y1="${oy}" x2="${ox+pw+skx}" y2="${oy+ph}" stroke="#4a5080" stroke-width="1.2"/>
+    <line x1="${ox+skx}" y1="${oy}" x2="${ox+pw+skx}" y2="${oy}" stroke="#4a5080" stroke-width="1.2"/>
+    <line x1="${ox+skx}" y1="${oy}" x2="${ox}" y2="${oy+sky}" stroke="#4a5080" stroke-width="1.2"/>
+    <text x="${ox+pw/2+4}" y="${oy+sky+ph*0.62+5}" fill="#38bdf8" font-size="12" text-anchor="middle" font-weight="600" font-family="IBM Plex Sans Thai,sans-serif" opacity="0.9">น้ำ</text>
+    <line x1="${ox-13}" y1="${oy+sky}" x2="${ox-13}" y2="${oy+sky+ph}" stroke="#6c63ff" stroke-width="1" stroke-dasharray="3,2"/>
+    <line x1="${ox-17}" y1="${oy+sky}" x2="${ox-7}" y2="${oy+sky}" stroke="#6c63ff" stroke-width="1.2"/>
+    <line x1="${ox-17}" y1="${oy+sky+ph}" x2="${ox-7}" y2="${oy+sky+ph}" stroke="#6c63ff" stroke-width="1.2"/>
+    <text x="${ox-15}" y="${oy+sky+ph/2+4}" fill="#8890aa" font-size="10" text-anchor="middle" font-family="IBM Plex Sans Thai,sans-serif" transform="rotate(-90,${ox-15},${oy+sky+ph/2})">${d.toFixed(1)} ม.</text>
+    <line x1="${ox}" y1="${dimY}" x2="${ox+pw}" y2="${dimY}" stroke="#6c63ff" stroke-width="1" stroke-dasharray="3,2"/>
+    <line x1="${ox}" y1="${dimY-4}" x2="${ox}" y2="${dimY+4}" stroke="#6c63ff" stroke-width="1.2"/>
+    <line x1="${ox+pw}" y1="${dimY-4}" x2="${ox+pw}" y2="${dimY+4}" stroke="#6c63ff" stroke-width="1.2"/>
+    <text x="${ox+pw/2}" y="${dimY+13}" fill="#8890aa" font-size="10" text-anchor="middle" font-family="IBM Plex Sans Thai,sans-serif">${w.toFixed(1)} ม.</text>
+    <line x1="${dimX}" y1="${oy}" x2="${dimX}" y2="${oy+ph}" stroke="#6c63ff" stroke-width="1" stroke-dasharray="3,2"/>
+    <line x1="${dimX-4}" y1="${oy}" x2="${dimX+4}" y2="${oy}" stroke="#6c63ff" stroke-width="1.2"/>
+    <line x1="${dimX-4}" y1="${oy+ph}" x2="${dimX+4}" y2="${oy+ph}" stroke="#6c63ff" stroke-width="1.2"/>
+    <text x="${dimX+6}" y="${oy+ph/2+4}" fill="#8890aa" font-size="10" text-anchor="start" font-family="IBM Plex Sans Thai,sans-serif">${l.toFixed(1)} ม.</text>
+  `;
+}
+</script>
+</body>
+</html>

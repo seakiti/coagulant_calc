@@ -111,6 +111,18 @@ header p { font-size: 12px; color: var(--text-sec); margin-top: 1px; }
 /* pond 3D */
 .pond-wrap { padding: 16px 12px 10px; text-align: center; background: var(--surface2); }
 .pond-wrap svg { width: 100%; max-width: 320px; height: auto; }
+.pond-legend { display: flex; justify-content: center; gap: 18px; margin-top: 10px; flex-wrap: wrap; }
+.pond-legend .lg-item { display: flex; align-items: center; gap: 6px; font-size: 11px; color: var(--text-sec); }
+.pond-legend .lg-swatch { width: 14px; height: 14px; border-radius: 4px; flex-shrink: 0; }
+.pond-legend .lg-swatch.actual { background: linear-gradient(135deg,#6c63ff,#38bdf8); }
+.pond-legend .lg-swatch.ref { border: 1.5px dashed #5b6080; background: transparent; }
+.size-compare {
+  margin-top: 10px; font-size: 12px; font-weight: 600;
+  padding: 7px 14px; border-radius: 999px; display: inline-block;
+}
+.size-compare.bigger { background: rgba(76,217,100,0.12); color: #4cd964; border: 1px solid rgba(76,217,100,0.3); }
+.size-compare.smaller { background: rgba(255,184,77,0.12); color: #ffb84d; border: 1px solid rgba(255,184,77,0.3); }
+.size-compare.similar { background: rgba(108,99,255,0.12); color: var(--accent2); border: 1px solid rgba(108,99,255,0.3); }
 
 /* pond illustration (volume-only modes) */
 .pond-illus {
@@ -155,6 +167,81 @@ header p { font-size: 12px; color: var(--text-sec); margin-top: 1px; }
 .field-warn {
   font-size: 11px; color: #ffb84d; margin-top: 4px; display: none;
 }
+
+/* app mode toggle (calculator / templates) */
+.app-tabs {
+  display: flex; gap: 8px; max-width: 480px; margin: 0 auto;
+  padding: 0 16px 14px;
+}
+.app-tab {
+  flex: 1; padding: 10px; border-radius: var(--radius-xs);
+  font-size: 13.5px; font-weight: 600; text-align: center;
+  border: 1px solid var(--border); background: var(--surface); color: var(--text-sec);
+  cursor: pointer; transition: all 0.18s; font-family: inherit;
+  display: flex; align-items: center; justify-content: center; gap: 6px;
+}
+.app-tab.active { background: linear-gradient(135deg, var(--accent), #5b52e8); color: #fff; border-color: transparent; box-shadow: 0 2px 14px var(--accent-glow); }
+.app-mode { display: none; }
+.app-mode.active { display: block; }
+
+/* templates */
+.tpl-card {
+  background: var(--surface); border-radius: var(--radius); border: 1px solid var(--border);
+  margin-bottom: 12px; overflow: hidden;
+}
+.tpl-head {
+  display: flex; align-items: center; gap: 8px;
+  padding: 12px 14px; border-bottom: 1px solid var(--border);
+}
+.tpl-title-input {
+  flex: 1; background: transparent; border: none; outline: none;
+  font-size: 14.5px; font-weight: 600; color: var(--text);
+  font-family: inherit; padding: 4px 2px;
+}
+.tpl-title-input::placeholder { color: var(--text-dim); }
+.tpl-del {
+  flex-shrink: 0; width: 30px; height: 30px; border-radius: 8px;
+  border: 1px solid rgba(255,107,107,0.25); background: rgba(255,107,107,0.08);
+  color: #ff6b6b; font-size: 14px; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+}
+.tpl-del:active { transform: scale(0.92); }
+.tpl-body { padding: 12px 14px 14px; }
+.tpl-textarea {
+  width: 100%; min-height: 110px; resize: vertical;
+  background: var(--surface2); border: 1px solid var(--border); border-radius: var(--radius-xs);
+  color: var(--text); font-size: 14px; font-family: inherit;
+  padding: 12px; line-height: 1.6; outline: none;
+  white-space: pre-wrap;
+}
+.tpl-textarea:focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-glow); }
+.tpl-textarea::placeholder { color: var(--text-dim); }
+.tpl-foot { display: flex; gap: 8px; margin-top: 10px; }
+.tpl-copy {
+  flex: 1; padding: 10px; border-radius: var(--radius-xs);
+  background: rgba(56,189,248,0.12); border: 1px solid rgba(56,189,248,0.3); color: var(--accent2);
+  font-size: 13px; font-weight: 600; font-family: inherit; cursor: pointer;
+  display: flex; align-items: center; justify-content: center; gap: 6px;
+}
+.tpl-copy:active { transform: scale(0.97); }
+.tpl-copy.copied { background: rgba(76,217,100,0.15); border-color: rgba(76,217,100,0.4); color: #4cd964; }
+.tpl-meta { font-size: 10.5px; color: var(--text-dim); align-self: center; }
+
+.btn-add-tpl {
+  width: 100%; padding: 14px; margin-bottom: 14px;
+  border-radius: var(--radius-xs); border: 1.5px dashed var(--border);
+  background: transparent; color: var(--text-sec);
+  font-size: 14px; font-weight: 600; font-family: inherit; cursor: pointer;
+  display: flex; align-items: center; justify-content: center; gap: 8px;
+  transition: all 0.15s;
+}
+.btn-add-tpl:active { transform: scale(0.98); border-color: var(--accent); color: var(--accent2); }
+
+.tpl-empty {
+  text-align: center; padding: 40px 20px; color: var(--text-dim);
+}
+.tpl-empty .te-icon { font-size: 32px; margin-bottom: 10px; }
+.tpl-empty .te-text { font-size: 13px; line-height: 1.6; }
 </style>
 </head>
 <body>
@@ -168,7 +255,12 @@ header p { font-size: 12px; color: var(--text-sec); margin-top: 1px; }
   </div>
 </header>
 
-<div class="content">
+<div class="app-tabs">
+  <button class="app-tab active" id="apptab-calc" onclick="switchApp('calc')">🧪 คำนวณสาร</button>
+  <button class="app-tab" id="apptab-tpl" onclick="switchApp('tpl')">💬 ข้อความตอบลูกค้า</button>
+</div>
+
+<div class="content app-mode active" id="appmode-calc">
   <div class="tabs">
     <button class="tab active" onclick="switchTab('rai')">ไร่ / งาน / วา</button>
     <button class="tab" onclick="switchTab('wly')">กว้าง × ยาว × ลึก</button>
@@ -237,7 +329,12 @@ header p { font-size: 12px; color: var(--text-sec); margin-top: 1px; }
       <div class="dim-item"><div class="dim-val" id="d-d">—</div><div class="dim-unit">METRE</div><div class="dim-name">ลึก</div></div>
     </div>
     <div class="pond-wrap">
-      <svg id="pond-svg-3d" viewBox="0 0 320 180" xmlns="http://www.w3.org/2000/svg"></svg>
+      <svg id="pond-svg-3d" viewBox="0 0 320 200" xmlns="http://www.w3.org/2000/svg"></svg>
+      <div class="pond-legend">
+        <span class="lg-item"><span class="lg-swatch actual"></span>บ่อลูกค้า</span>
+        <span class="lg-item"><span class="lg-swatch ref"></span>บ่อมาตรฐาน (20×20×2 ม. = 1 กระสอบ)</span>
+      </div>
+      <div id="size-compare-3d"></div>
     </div>
     <p class="ref-note">อัตราอ้างอิง: 800 ม³ → 1 กระสอบ (5 กก.) หรือ 160 ม³ → 1 กก. (ใช้คำนวณบ่อเล็ก)</p>
     <div class="ask-note" id="ask-note-3d">
@@ -259,6 +356,11 @@ header p { font-size: 12px; color: var(--text-sec); margin-top: 1px; }
     </div>
     <div class="pond-illus">
       <svg class="illus-svg" id="pond-illus-svg" viewBox="0 0 280 140" xmlns="http://www.w3.org/2000/svg"></svg>
+      <div class="pond-legend">
+        <span class="lg-item"><span class="lg-swatch actual"></span>ปริมาณน้ำของลูกค้า</span>
+        <span class="lg-item"><span class="lg-swatch ref"></span>เทียบกับบ่อมาตรฐาน (800 ม³ = 1 กระสอบ)</span>
+      </div>
+      <div id="size-compare-vol"></div>
       <div class="vol-info">
         <div class="vol-chip"><div class="vc-val" id="vi-m3">—</div><div class="vc-lab">ลูกบาศก์เมตร (ม³)</div></div>
         <div class="vol-chip"><div class="vc-val" id="vi-lit">—</div><div class="vc-lab">ลิตร</div></div>
@@ -276,6 +378,125 @@ header p { font-size: 12px; color: var(--text-sec); margin-top: 1px; }
     </div>
   </div>
 </div>
+<!-- /appmode-calc -->
+
+<div class="content app-mode" id="appmode-tpl">
+  <button class="btn-add-tpl" onclick="addTemplate()">+ เพิ่มข้อความใหม่</button>
+  <div id="tpl-list"></div>
+  <div class="tpl-empty" id="tpl-empty">
+    <div class="te-icon">💬</div>
+    <div class="te-text">ยังไม่มีข้อความที่บันทึกไว้<br>กดปุ่ม "+ เพิ่มข้อความใหม่" ด้านบนเพื่อเริ่มสร้าง</div>
+  </div>
+</div>
+<!-- /appmode-tpl -->
+
+<script>
+const APP_STORAGE_KEY = 'coag_calc_templates_v1';
+
+function switchApp(mode) {
+  document.getElementById('apptab-calc').classList.toggle('active', mode==='calc');
+  document.getElementById('apptab-tpl').classList.toggle('active', mode==='tpl');
+  document.getElementById('appmode-calc').classList.toggle('active', mode==='calc');
+  document.getElementById('appmode-tpl').classList.toggle('active', mode==='tpl');
+  if (mode==='tpl') renderTemplates();
+}
+
+function loadTemplates() {
+  try {
+    const raw = localStorage.getItem(APP_STORAGE_KEY);
+    return raw ? JSON.parse(raw) : [];
+  } catch(e) { return []; }
+}
+
+function saveTemplates(list) {
+  try { localStorage.setItem(APP_STORAGE_KEY, JSON.stringify(list)); } catch(e) {}
+}
+
+function addTemplate() {
+  const list = loadTemplates();
+  list.unshift({ id: 'tpl_'+Date.now(), title: '', body: '' });
+  saveTemplates(list);
+  renderTemplates();
+  setTimeout(()=>{
+    const firstTextarea = document.querySelector('.tpl-card .tpl-title-input');
+    if (firstTextarea) firstTextarea.focus();
+  }, 50);
+}
+
+function updateTemplateField(id, field, value) {
+  const list = loadTemplates();
+  const item = list.find(t => t.id === id);
+  if (item) { item[field] = value; saveTemplates(list); }
+}
+
+function deleteTemplate(id) {
+  if (!confirm('ลบข้อความนี้ใช่ไหม?')) return;
+  let list = loadTemplates();
+  list = list.filter(t => t.id !== id);
+  saveTemplates(list);
+  renderTemplates();
+}
+
+function copyTemplate(id, btn) {
+  const list = loadTemplates();
+  const item = list.find(t => t.id === id);
+  if (!item) return;
+  const text = item.body || '';
+  const finish = (ok) => {
+    const original = '📋 คัดลอก';
+    btn.textContent = ok ? '✓ คัดลอกแล้ว' : '✗ ไม่สำเร็จ';
+    btn.classList.toggle('copied', ok);
+    setTimeout(()=>{ btn.textContent = original; btn.classList.remove('copied'); }, 1600);
+  };
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(text).then(()=>finish(true)).catch(()=>finish(false));
+  } else {
+    try {
+      const ta = document.createElement('textarea');
+      ta.value = text; ta.style.position='fixed'; ta.style.opacity='0';
+      document.body.appendChild(ta); ta.focus(); ta.select();
+      document.execCommand('copy');
+      document.body.removeChild(ta);
+      finish(true);
+    } catch(e) { finish(false); }
+  }
+}
+
+function escapeHtml(str) {
+  const d = document.createElement('div');
+  d.textContent = str;
+  return d.innerHTML;
+}
+
+function renderTemplates() {
+  const list = loadTemplates();
+  const container = document.getElementById('tpl-list');
+  const empty = document.getElementById('tpl-empty');
+  if (list.length === 0) {
+    container.innerHTML = '';
+    empty.style.display = 'block';
+    return;
+  }
+  empty.style.display = 'none';
+  container.innerHTML = list.map(item => `
+    <div class="tpl-card" data-id="${item.id}">
+      <div class="tpl-head">
+        <input class="tpl-title-input" type="text" placeholder="หัวข้อ เช่น ข้อความต้อนรับ, วิธีชำระเงิน"
+          value="${escapeHtml(item.title)}"
+          oninput="updateTemplateField('${item.id}','title',this.value)">
+        <button class="tpl-del" onclick="deleteTemplate('${item.id}')" title="ลบ">🗑</button>
+      </div>
+      <div class="tpl-body">
+        <textarea class="tpl-textarea" placeholder="พิมพ์ข้อความที่ต้องการบันทึกไว้ตอบลูกค้า... ใส่ emoji หรือขึ้นบรรทัดใหม่ได้ตามต้องการ 😊"
+          oninput="updateTemplateField('${item.id}','body',this.value)">${escapeHtml(item.body)}</textarea>
+        <div class="tpl-foot">
+          <button class="tpl-copy" onclick="copyTemplate('${item.id}', this)">📋 คัดลอก</button>
+        </div>
+      </div>
+    </div>
+  `).join('');
+}
+</script>
 
 <script>
 const RAI=1600, NGAN=400, WA=4, REF_VOL=800;
@@ -458,24 +679,19 @@ function renderResult(suffix, vol, kgPrecise, bags, kg) {
   }
 }
 
-/* ---- วาดรูปบ่อ illustration สำหรับ volume-only ---- */
+/* ---- วาดรูปบ่อ illustration สำหรับ volume-only พร้อมเทียบกับบ่อมาตรฐาน ---- */
 function drawIllus(vol) {
   const svg = document.getElementById('pond-illus-svg');
-  // บ่อแบบ top-down view + ตัวเลขปริมาตร
-  // คำนวณ fill ratio เทียบ REF_VOL (800 m³ = 1 bag)
-  const ratio = Math.min(vol / (Math.ceil(vol/REF_VOL)*REF_VOL), 1);
-  const waterRatio = 0.35 + ratio * 0.55; // ระดับน้ำ 35%–90% ของความสูง
+  const ratio = Math.min(vol / REF_VOL, 1.4); // เทียบกับบ่อมาตรฐาน 800 ม³ โดยตรง
+  const waterRatio = Math.min(0.12 + ratio * 0.68, 0.92);
 
   const W=280, H=140;
-  // perspective trapezoid pond
   const bx=30, by=30, bw=220, bh=85;
   const tilt=22;
-  // outer rim
   const topL=[bx+tilt, by];
   const topR=[bx+bw-tilt, by];
   const botR=[bx+bw, by+bh];
   const botL=[bx, by+bh];
-  // water surface (scaled by waterRatio from bottom)
   const wy = by + bh*(1-waterRatio);
   const wTilt = tilt*(1-waterRatio);
   const wTopL=[bx+wTilt, wy];
@@ -483,10 +699,22 @@ function drawIllus(vol) {
   const wBotR=[bx+bw, by+bh];
   const wBotL=[bx, by+bh];
 
+  // เส้นระดับบ่อมาตรฐาน (800 ม³ = เต็มบ่อพอดี = เส้นขอบบนสุด)
+  const refY = by; // เส้นเต็ม = ขอบบนพอดี (REF_VOL fills exactly to top)
+  const refTilt = tilt;
+
   function pts(arr){ return arr.map(p=>p.join(',')).join(' '); }
 
-  // ground color strips
-  const rimH = 10;
+  const pct = (vol/REF_VOL*100);
+  let compareHtml = '';
+  if (pct < 92) {
+    compareHtml = `<span class="size-compare smaller">น้อยกว่าบ่อมาตรฐาน ${(100-pct).toFixed(0)}%</span>`;
+  } else if (pct > 108) {
+    compareHtml = `<span class="size-compare bigger">มากกว่าบ่อมาตรฐาน ${(pct-100).toFixed(0)}%</span>`;
+  } else {
+    compareHtml = `<span class="size-compare similar">ใกล้เคียงปริมาตรมาตรฐาน</span>`;
+  }
+  document.getElementById('size-compare-vol').innerHTML = compareHtml;
 
   svg.innerHTML=`
     <defs>
@@ -517,6 +745,10 @@ function drawIllus(vol) {
     <polygon points="${pts([topL,topR,botR,botL])}" fill="none" stroke="#4a5080" stroke-width="1.5"/>
     <line x1="${wTopL[0]}" y1="${wTopL[1]}" x2="${wTopR[0]}" y2="${wTopR[1]}" stroke="#38bdf8" stroke-width="1.2" opacity="0.8"/>
 
+    <!-- เส้นบ่อมาตรฐาน (เต็มขอบบน = 800 ม³) -->
+    <line x1="${bx+refTilt-6}" y1="${refY}" x2="${bx+bw-refTilt+6}" y2="${refY}" stroke="#5b6080" stroke-width="1.2" stroke-dasharray="3,2"/>
+    <text x="${bx+bw-refTilt+10}" y="${refY+4}" fill="#5b6080" font-size="9" text-anchor="start" font-family="IBM Plex Sans Thai,sans-serif">มาตรฐาน 800 ม³</text>
+
     <!-- ลูกศรระดับน้ำ -->
     <line x1="${bx-10}" y1="${wy}" x2="${bx-10}" y2="${by+bh}" stroke="#6c63ff" stroke-width="1.5" stroke-dasharray="3,2"/>
     <polygon points="${bx-10},${wy-1} ${bx-14},${wy+7} ${bx-6},${wy+7}" fill="#6c63ff" opacity="0.8"/>
@@ -530,14 +762,55 @@ function drawIllus(vol) {
   `;
 }
 
-/* ---- วาดรูปบ่อ 3D จริง ---- */
+/* ---- วาดรูปบ่อ 3D จริง พร้อมบ่อมาตรฐานเปรียบเทียบ ---- */
+const REF_W = 20, REF_L = 20, REF_D = 2; // บ่อมาตรฐาน 800 ม³ = 1 กระสอบ
+
 function drawPond3d(w,l,d) {
   const svg=document.getElementById('pond-svg-3d');
-  const ox=28,oy=16,pw=210,ph=88,skx=54,sky=26;
-  const wl=0.82;
   function p(pts){return pts.map(pt=>pt[0]+','+pt[1]).join(' ');}
-  const dimY=oy+sky+ph+16, dimX=ox+pw+skx+12;
-  const wSideApprox=[[ox+pw,oy+sky+ph*(1-wl)],[ox+pw+skx*wl,oy+sky*(1-wl)+ph*(1-wl)],[ox+pw+skx*wl,oy+sky*(1-wl)+ph*(1-wl)+ph*wl],[ox+pw,oy+sky+ph]];
+
+  // กรอบพื้นที่วาด
+  const cx=120, cy=150; // จุดอ้างอิงมุมล่างซ้ายของฐาน (shared anchor)
+  const skx0=54, sky0=26; // perspective skew คงที่
+
+  // มาตราส่วน: หาตัวที่ใหญ่สุดในบรรดา w,l,d,REF_W,REF_L,REF_D เพื่อ fit ทั้งคู่ในกรอบ
+  const maxDim = Math.max(w,l,d,REF_W,REF_L,REF_D);
+  const scale = 95/maxDim; // 95px แทนค่ามากสุด
+
+  function box(bw,bl,bd, ox,oy){
+    const pw=bw*scale, pl=bl*scale, ph=bd*scale;
+    // base footprint width/length mapped onto fixed skew amount proportional to pl
+    const skx = skx0*(pl/95), sky = sky0*(pl/95);
+    const top=[[ox+skx,oy-ph],[ox+skx+pw,oy-ph],[ox+pw,oy-ph+sky],[ox,oy-ph+sky]];
+    const front=[[ox,oy-ph+sky],[ox+pw,oy-ph+sky],[ox+pw,oy+sky],[ox,oy+sky]];
+    const side=[[ox+pw,oy-ph+sky],[ox+pw+skx,oy-ph],[ox+pw+skx,oy],[ox+pw,oy+sky]];
+    return {top,front,side,pw,ph,skx,sky,ox,oy};
+  }
+
+  // วางบ่อมาตรฐาน (เส้นประ) เป็นพื้นฐาน แล้ววางบ่อจริงซ้อนทับให้ฐานชิดมุมเดียวกัน
+  const baseX = 60, baseY = 168;
+  const refB = box(REF_W, REF_L, REF_D, baseX, baseY);
+  const actB = box(w, l, d, baseX, baseY);
+
+  const wl=0.82; // ระดับน้ำ
+  function waterPoly(b){
+    const wph = b.ph*wl;
+    return [[b.ox, b.oy-wph+b.sky*(wph/b.ph)],[b.ox+b.pw, b.oy-wph+b.sky*(wph/b.ph)],[b.ox+b.pw,b.oy+b.sky],[b.ox,b.oy+b.sky]];
+  }
+
+  // เปรียบเทียบขนาด
+  const volActual = w*l*d, volRef = REF_W*REF_L*REF_D;
+  const pct = ((volActual/volRef)*100);
+  let compareHtml = '';
+  if (pct < 92) {
+    compareHtml = `<span class="size-compare smaller">บ่อนี้เล็กกว่ามาตรฐาน ${(100-pct).toFixed(0)}%</span>`;
+  } else if (pct > 108) {
+    compareHtml = `<span class="size-compare bigger">บ่อนี้ใหญ่กว่ามาตรฐาน ${(pct-100).toFixed(0)}%</span>`;
+  } else {
+    compareHtml = `<span class="size-compare similar">บ่อนี้ใกล้เคียงขนาดมาตรฐาน</span>`;
+  }
+  document.getElementById('size-compare-3d').innerHTML = compareHtml;
+
   svg.innerHTML=`
     <defs>
       <linearGradient id="wg3d" x1="0" y1="0" x2="0" y2="1">
@@ -549,34 +822,23 @@ function drawPond3d(w,l,d) {
         <stop offset="100%" stop-color="#38bdf8" stop-opacity="0.5"/>
       </linearGradient>
     </defs>
-    <polygon points="${p([[ox+skx,oy],[ox+skx+pw,oy],[ox+pw,oy+sky],[ox,oy+sky]])}" fill="#1e2335" stroke="#3a3f60" stroke-width="1.2"/>
-    <polygon points="${p(wSideApprox)}" fill="url(#wg2_3d)" stroke="#6c63ff" stroke-width="0.8" opacity="0.85"/>
-    <polygon points="${p([[ox,oy+sky+ph*(1-wl)],[ox+pw,oy+sky+ph*(1-wl)],[ox+pw,oy+sky+ph],[ox,oy+sky+ph]])}" fill="url(#wg3d)" stroke="#6c63ff" stroke-width="0.8" opacity="0.9"/>
-    <polygon points="${p([[ox+skx*wl,oy+sky*(1-wl)],[ox+skx*wl+pw,oy+sky*(1-wl)],[ox+pw,oy+sky],[ox,oy+sky]])}" fill="#38bdf8" stroke="#38bdf8" stroke-width="1" opacity="0.35"/>
-    <polygon points="${p([[ox,oy+sky],[ox+pw,oy+sky],[ox+pw,oy+sky+ph],[ox,oy+sky+ph]])}" fill="#1e2335" stroke="#3a3f60" stroke-width="1.2" fill-opacity="0.15"/>
-    <polygon points="${p([[ox+pw,oy+sky],[ox+pw+skx,oy],[ox+pw+skx,oy+ph],[ox+pw,oy+sky+ph]])}" fill="#1a1f35" stroke="#3a3f60" stroke-width="1.2" fill-opacity="0.25"/>
-    <line x1="${ox}" y1="${oy+sky}" x2="${ox+pw}" y2="${oy+sky}" stroke="#4a5080" stroke-width="1.2"/>
-    <line x1="${ox}" y1="${oy+sky+ph}" x2="${ox+pw}" y2="${oy+sky+ph}" stroke="#4a5080" stroke-width="1.2"/>
-    <line x1="${ox}" y1="${oy+sky}" x2="${ox}" y2="${oy+sky+ph}" stroke="#4a5080" stroke-width="1.2"/>
-    <line x1="${ox+pw}" y1="${oy+sky}" x2="${ox+pw}" y2="${oy+sky+ph}" stroke="#4a5080" stroke-width="1.2"/>
-    <line x1="${ox+pw}" y1="${oy+sky}" x2="${ox+pw+skx}" y2="${oy}" stroke="#4a5080" stroke-width="1.2"/>
-    <line x1="${ox+pw}" y1="${oy+sky+ph}" x2="${ox+pw+skx}" y2="${oy+ph}" stroke="#4a5080" stroke-width="1.2"/>
-    <line x1="${ox+pw+skx}" y1="${oy}" x2="${ox+pw+skx}" y2="${oy+ph}" stroke="#4a5080" stroke-width="1.2"/>
-    <line x1="${ox+skx}" y1="${oy}" x2="${ox+pw+skx}" y2="${oy}" stroke="#4a5080" stroke-width="1.2"/>
-    <line x1="${ox+skx}" y1="${oy}" x2="${ox}" y2="${oy+sky}" stroke="#4a5080" stroke-width="1.2"/>
-    <text x="${ox+pw/2+4}" y="${oy+sky+ph*0.62+5}" fill="#38bdf8" font-size="12" text-anchor="middle" font-weight="600" font-family="IBM Plex Sans Thai,sans-serif" opacity="0.9">น้ำ</text>
-    <line x1="${ox-13}" y1="${oy+sky}" x2="${ox-13}" y2="${oy+sky+ph}" stroke="#6c63ff" stroke-width="1" stroke-dasharray="3,2"/>
-    <line x1="${ox-17}" y1="${oy+sky}" x2="${ox-7}" y2="${oy+sky}" stroke="#6c63ff" stroke-width="1.2"/>
-    <line x1="${ox-17}" y1="${oy+sky+ph}" x2="${ox-7}" y2="${oy+sky+ph}" stroke="#6c63ff" stroke-width="1.2"/>
-    <text x="${ox-15}" y="${oy+sky+ph/2+4}" fill="#8890aa" font-size="10" text-anchor="middle" font-family="IBM Plex Sans Thai,sans-serif" transform="rotate(-90,${ox-15},${oy+sky+ph/2})">${d.toFixed(1)} ม.</text>
-    <line x1="${ox}" y1="${dimY}" x2="${ox+pw}" y2="${dimY}" stroke="#6c63ff" stroke-width="1" stroke-dasharray="3,2"/>
-    <line x1="${ox}" y1="${dimY-4}" x2="${ox}" y2="${dimY+4}" stroke="#6c63ff" stroke-width="1.2"/>
-    <line x1="${ox+pw}" y1="${dimY-4}" x2="${ox+pw}" y2="${dimY+4}" stroke="#6c63ff" stroke-width="1.2"/>
-    <text x="${ox+pw/2}" y="${dimY+13}" fill="#8890aa" font-size="10" text-anchor="middle" font-family="IBM Plex Sans Thai,sans-serif">${w.toFixed(1)} ม.</text>
-    <line x1="${dimX}" y1="${oy}" x2="${dimX}" y2="${oy+ph}" stroke="#6c63ff" stroke-width="1" stroke-dasharray="3,2"/>
-    <line x1="${dimX-4}" y1="${oy}" x2="${dimX+4}" y2="${oy}" stroke="#6c63ff" stroke-width="1.2"/>
-    <line x1="${dimX-4}" y1="${oy+ph}" x2="${dimX+4}" y2="${oy+ph}" stroke="#6c63ff" stroke-width="1.2"/>
-    <text x="${dimX+6}" y="${oy+ph/2+4}" fill="#8890aa" font-size="10" text-anchor="start" font-family="IBM Plex Sans Thai,sans-serif">${l.toFixed(1)} ม.</text>
+
+    <!-- บ่อมาตรฐาน (เส้นประจาง) -->
+    <polygon points="${p(refB.top)}" fill="none" stroke="#5b6080" stroke-width="1.2" stroke-dasharray="3,2"/>
+    <polygon points="${p(refB.front)}" fill="none" stroke="#5b6080" stroke-width="1.2" stroke-dasharray="3,2"/>
+    <polygon points="${p(refB.side)}" fill="none" stroke="#5b6080" stroke-width="1.2" stroke-dasharray="3,2"/>
+
+    <!-- บ่อจริงของลูกค้า -->
+    <polygon points="${p(actB.top)}" fill="#1e2335" stroke="#6c63ff" stroke-width="1.3"/>
+    <polygon points="${p(waterPoly(actB))}" fill="url(#wg3d)" stroke="#38bdf8" stroke-width="0.8" opacity="0.92"/>
+    <polygon points="${p(actB.front)}" fill="none" stroke="#6c63ff" stroke-width="1.3"/>
+    <polygon points="${p(actB.side)}" fill="#1a1f35" stroke="#6c63ff" stroke-width="1.3" fill-opacity="0.4"/>
+
+    <text x="${actB.ox+actB.pw/2+8}" y="${actB.oy-actB.ph*0.45}" fill="#38bdf8" font-size="11" text-anchor="middle" font-weight="600" font-family="IBM Plex Sans Thai,sans-serif" opacity="0.9">น้ำ</text>
+
+    <!-- เส้นบอกขนาดบ่อจริง -->
+    <text x="${actB.ox+actB.pw/2}" y="${actB.oy+actB.sky+16}" fill="#8890aa" font-size="10" text-anchor="middle" font-family="IBM Plex Sans Thai,sans-serif">${w.toFixed(1)}×${l.toFixed(1)}×${d.toFixed(1)} ม.</text>
+    <text x="${refB.ox+refB.pw+refB.skx+8}" y="${refB.oy-refB.ph/2}" fill="#5b6080" font-size="9.5" text-anchor="start" font-family="IBM Plex Sans Thai,sans-serif">มาตรฐาน</text>
   `;
 }
 </script>

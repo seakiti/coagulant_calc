@@ -189,16 +189,37 @@ header p { font-size: 12px; color: var(--text-sec); margin-top: 1px; }
   background: var(--surface); border-radius: var(--radius); border: 1px solid var(--border);
   margin-bottom: 12px; overflow: hidden;
 }
+.tpl-card.pinned { border-color: rgba(255,200,87,0.4); box-shadow: 0 0 0 1px rgba(255,200,87,0.15); }
 .tpl-head {
-  display: flex; align-items: center; gap: 8px;
-  padding: 12px 14px; border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; gap: 6px;
+  padding: 12px 14px; cursor: pointer;
 }
+.tpl-card.expanded .tpl-head { border-bottom: 1px solid var(--border); }
+.tpl-chevron {
+  flex-shrink: 0; width: 20px; height: 20px; display: flex; align-items: center; justify-content: center;
+  color: var(--text-dim); font-size: 11px; transition: transform 0.18s;
+}
+.tpl-card.expanded .tpl-chevron { transform: rotate(90deg); }
+.tpl-star {
+  flex-shrink: 0; width: 30px; height: 30px; border-radius: 8px;
+  border: 1px solid var(--border); background: transparent;
+  color: var(--text-dim); font-size: 15px; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  transition: all 0.15s;
+}
+.tpl-star.active { color: #ffc857; border-color: rgba(255,200,87,0.35); background: rgba(255,200,87,0.1); }
+.tpl-star:active { transform: scale(0.9); }
 .tpl-title-input {
   flex: 1; background: transparent; border: none; outline: none;
   font-size: 14.5px; font-weight: 600; color: var(--text);
-  font-family: inherit; padding: 4px 2px;
+  font-family: inherit; padding: 4px 2px; min-width: 0;
 }
 .tpl-title-input::placeholder { color: var(--text-dim); }
+.tpl-title-display {
+  flex: 1; font-size: 14.5px; font-weight: 600; color: var(--text);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0;
+}
+.tpl-title-display.untitled { color: var(--text-dim); font-weight: 500; }
 .tpl-del {
   flex-shrink: 0; width: 30px; height: 30px; border-radius: 8px;
   border: 1px solid rgba(255,107,107,0.25); background: rgba(255,107,107,0.08);
@@ -206,7 +227,8 @@ header p { font-size: 12px; color: var(--text-sec); margin-top: 1px; }
   display: flex; align-items: center; justify-content: center;
 }
 .tpl-del:active { transform: scale(0.92); }
-.tpl-body { padding: 12px 14px 14px; }
+.tpl-body { padding: 12px 14px 14px; display: none; }
+.tpl-card.expanded .tpl-body { display: block; }
 .tpl-textarea {
   width: 100%; min-height: 110px; resize: vertical;
   background: var(--surface2); border: 1px solid var(--border); border-radius: var(--radius-xs);
@@ -227,6 +249,21 @@ header p { font-size: 12px; color: var(--text-sec); margin-top: 1px; }
 .tpl-copy.copied { background: rgba(76,217,100,0.15); border-color: rgba(76,217,100,0.4); color: #4cd964; }
 .tpl-meta { font-size: 10.5px; color: var(--text-dim); align-self: center; }
 
+/* collapsed-state preview line + quick copy */
+.tpl-preview {
+  padding: 0 14px 12px; font-size: 12px; color: var(--text-dim);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.tpl-card.expanded .tpl-preview { display: none; }
+.tpl-quick-copy {
+  flex-shrink: 0; width: 30px; height: 30px; border-radius: 8px;
+  border: 1px solid rgba(56,189,248,0.25); background: rgba(56,189,248,0.08);
+  color: var(--accent2); font-size: 13px; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+}
+.tpl-quick-copy:active { transform: scale(0.9); }
+.tpl-quick-copy.copied { background: rgba(76,217,100,0.15); border-color: rgba(76,217,100,0.4); color: #4cd964; }
+
 .btn-add-tpl {
   width: 100%; padding: 14px; margin-bottom: 14px;
   border-radius: var(--radius-xs); border: 1.5px dashed var(--border);
@@ -236,6 +273,19 @@ header p { font-size: 12px; color: var(--text-sec); margin-top: 1px; }
   transition: all 0.15s;
 }
 .btn-add-tpl:active { transform: scale(0.98); border-color: var(--accent); color: var(--accent2); }
+
+.tpl-search {
+  width: 100%; padding: 11px 14px; margin-bottom: 12px;
+  background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-xs);
+  color: var(--text); font-size: 14px; font-family: inherit; outline: none;
+}
+.tpl-search:focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-glow); }
+.tpl-search::placeholder { color: var(--text-dim); }
+
+.tpl-section-label {
+  font-size: 11px; font-weight: 600; letter-spacing: 1px; color: var(--text-dim);
+  text-transform: uppercase; margin: 4px 2px 8px; display: flex; align-items: center; gap: 5px;
+}
 
 .tpl-empty {
   text-align: center; padding: 40px 20px; color: var(--text-dim);
@@ -382,6 +432,7 @@ header p { font-size: 12px; color: var(--text-sec); margin-top: 1px; }
 
 <div class="content app-mode" id="appmode-tpl">
   <button class="btn-add-tpl" onclick="addTemplate()">+ เพิ่มข้อความใหม่</button>
+  <input type="text" class="tpl-search" id="tpl-search" placeholder="🔍 ค้นหาจากหัวข้อ..." oninput="renderTemplates()">
   <div id="tpl-list"></div>
   <div class="tpl-empty" id="tpl-empty">
     <div class="te-icon">💬</div>
@@ -390,8 +441,10 @@ header p { font-size: 12px; color: var(--text-sec); margin-top: 1px; }
 </div>
 <!-- /appmode-tpl -->
 
+
 <script>
 const APP_STORAGE_KEY = 'coag_calc_templates_v1';
+let expandedIds = new Set(); // เก็บ id ที่กำลังขยายอยู่ (ไม่บันทึกลง storage)
 
 function switchApp(mode) {
   document.getElementById('apptab-calc').classList.toggle('active', mode==='calc');
@@ -404,7 +457,9 @@ function switchApp(mode) {
 function loadTemplates() {
   try {
     const raw = localStorage.getItem(APP_STORAGE_KEY);
-    return raw ? JSON.parse(raw) : [];
+    const list = raw ? JSON.parse(raw) : [];
+    list.forEach(t => { if (typeof t.pinned === 'undefined') t.pinned = false; });
+    return list;
   } catch(e) { return []; }
 }
 
@@ -414,12 +469,15 @@ function saveTemplates(list) {
 
 function addTemplate() {
   const list = loadTemplates();
-  list.unshift({ id: 'tpl_'+Date.now(), title: '', body: '' });
+  const newId = 'tpl_'+Date.now();
+  list.unshift({ id: newId, title: '', body: '', pinned: false });
   saveTemplates(list);
+  expandedIds.add(newId);
+  document.getElementById('tpl-search').value = '';
   renderTemplates();
   setTimeout(()=>{
-    const firstTextarea = document.querySelector('.tpl-card .tpl-title-input');
-    if (firstTextarea) firstTextarea.focus();
+    const firstTitle = document.querySelector('.tpl-card .tpl-title-input');
+    if (firstTitle) firstTitle.focus();
   }, 50);
 }
 
@@ -434,6 +492,21 @@ function deleteTemplate(id) {
   let list = loadTemplates();
   list = list.filter(t => t.id !== id);
   saveTemplates(list);
+  expandedIds.delete(id);
+  renderTemplates();
+}
+
+function togglePin(id, ev) {
+  ev.stopPropagation();
+  const list = loadTemplates();
+  const item = list.find(t => t.id === id);
+  if (item) { item.pinned = !item.pinned; saveTemplates(list); }
+  renderTemplates();
+}
+
+function toggleExpand(id) {
+  if (expandedIds.has(id)) expandedIds.delete(id);
+  else expandedIds.add(id);
   renderTemplates();
 }
 
@@ -441,12 +514,15 @@ function copyTemplate(id, btn) {
   const list = loadTemplates();
   const item = list.find(t => t.id === id);
   if (!item) return;
-  const text = item.body || '';
+  doCopy(item.body || '', btn, '📋 คัดลอก');
+}
+
+function doCopy(text, btn, originalLabel) {
   const finish = (ok) => {
-    const original = '📋 คัดลอก';
-    btn.textContent = ok ? '✓ คัดลอกแล้ว' : '✗ ไม่สำเร็จ';
+    if (!btn) return;
+    btn.textContent = ok ? '✓' : '✗';
     btn.classList.toggle('copied', ok);
-    setTimeout(()=>{ btn.textContent = original; btn.classList.remove('copied'); }, 1600);
+    setTimeout(()=>{ btn.textContent = originalLabel; btn.classList.remove('copied'); }, 1400);
   };
   if (navigator.clipboard && navigator.clipboard.writeText) {
     navigator.clipboard.writeText(text).then(()=>finish(true)).catch(()=>finish(false));
@@ -464,28 +540,62 @@ function copyTemplate(id, btn) {
 
 function escapeHtml(str) {
   const d = document.createElement('div');
-  d.textContent = str;
+  d.textContent = str || '';
   return d.innerHTML;
 }
 
 function renderTemplates() {
-  const list = loadTemplates();
+  const allList = loadTemplates();
   const container = document.getElementById('tpl-list');
   const empty = document.getElementById('tpl-empty');
+  const searchInput = document.getElementById('tpl-search');
+  const query = (searchInput && searchInput.value || '').trim().toLowerCase();
+
+  if (allList.length === 0) {
+    container.innerHTML = '';
+    empty.style.display = 'block';
+    empty.querySelector('.te-text').innerHTML = 'ยังไม่มีข้อความที่บันทึกไว้<br>กดปุ่ม "+ เพิ่มข้อความใหม่" ด้านบนเพื่อเริ่มสร้าง';
+    return;
+  }
+
+  let list = allList;
+  if (query) {
+    list = allList.filter(t => (t.title||'').toLowerCase().includes(query) || (t.body||'').toLowerCase().includes(query));
+  }
+
   if (list.length === 0) {
     container.innerHTML = '';
     empty.style.display = 'block';
+    empty.querySelector('.te-text').innerHTML = 'ไม่พบข้อความที่ตรงกับ "'+escapeHtml(query)+'"';
     return;
   }
   empty.style.display = 'none';
-  container.innerHTML = list.map(item => `
-    <div class="tpl-card" data-id="${item.id}">
-      <div class="tpl-head">
-        <input class="tpl-title-input" type="text" placeholder="หัวข้อ เช่น ข้อความต้อนรับ, วิธีชำระเงิน"
-          value="${escapeHtml(item.title)}"
-          oninput="updateTemplateField('${item.id}','title',this.value)">
-        <button class="tpl-del" onclick="deleteTemplate('${item.id}')" title="ลบ">🗑</button>
+
+  // เรียงปักหมุดไว้บนสุด คงลำดับเดิมในแต่ละกลุ่ม
+  const pinned = list.filter(t => t.pinned);
+  const rest = list.filter(t => !t.pinned);
+  const ordered = pinned.concat(rest);
+
+  function cardHtml(item, isPinnedGroup) {
+    const isExpanded = expandedIds.has(item.id);
+    const titleText = item.title && item.title.trim() ? escapeHtml(item.title) : 'ไม่มีหัวข้อ';
+    const titleClass = item.title && item.title.trim() ? '' : 'untitled';
+    const previewText = (item.body||'').replace(/\n/g,' ').trim();
+    return `
+    <div class="tpl-card ${isExpanded?'expanded':''} ${item.pinned?'pinned':''}" data-id="${item.id}">
+      <div class="tpl-head" onclick="toggleExpand('${item.id}')">
+        <span class="tpl-chevron">▶</span>
+        ${isExpanded
+          ? `<input class="tpl-title-input" type="text" placeholder="หัวข้อ เช่น ข้อความต้อนรับ, วิธีชำระเงิน"
+              value="${escapeHtml(item.title)}" onclick="event.stopPropagation()"
+              oninput="updateTemplateField('${item.id}','title',this.value)">`
+          : `<span class="tpl-title-display ${titleClass}">${item.pinned?'📌 ':''}${titleText}</span>`
+        }
+        ${!isExpanded ? `<button class="tpl-quick-copy" onclick="event.stopPropagation(); copyTemplate('${item.id}', this)" title="คัดลอกด่วน">📋</button>` : ''}
+        <button class="tpl-star ${item.pinned?'active':''}" onclick="togglePin('${item.id}', event)" title="ปักหมุด">${item.pinned?'⭐':'☆'}</button>
+        <button class="tpl-del" onclick="event.stopPropagation(); deleteTemplate('${item.id}')" title="ลบ">🗑</button>
       </div>
+      ${!isExpanded ? `<div class="tpl-preview" onclick="toggleExpand('${item.id}')">${escapeHtml(previewText) || '<span style=\"color:var(--text-dim)\">(ยังไม่มีข้อความ)</span>'}</div>` : ''}
       <div class="tpl-body">
         <textarea class="tpl-textarea" placeholder="พิมพ์ข้อความที่ต้องการบันทึกไว้ตอบลูกค้า... ใส่ emoji หรือขึ้นบรรทัดใหม่ได้ตามต้องการ 😊"
           oninput="updateTemplateField('${item.id}','body',this.value)">${escapeHtml(item.body)}</textarea>
@@ -493,8 +603,19 @@ function renderTemplates() {
           <button class="tpl-copy" onclick="copyTemplate('${item.id}', this)">📋 คัดลอก</button>
         </div>
       </div>
-    </div>
-  `).join('');
+    </div>`;
+  }
+
+  let html = '';
+  if (pinned.length > 0) {
+    html += `<div class="tpl-section-label">📌 ปักหมุดไว้ (${pinned.length})</div>`;
+    html += pinned.map(item => cardHtml(item, true)).join('');
+  }
+  if (rest.length > 0) {
+    if (pinned.length > 0) html += `<div class="tpl-section-label" style="margin-top:18px">ทั้งหมด</div>`;
+    html += rest.map(item => cardHtml(item, false)).join('');
+  }
+  container.innerHTML = html;
 }
 </script>
 

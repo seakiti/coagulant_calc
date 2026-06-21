@@ -329,7 +329,7 @@ header p { font-size: 12px; color: var(--text-sec); margin-top: 1px; }
       <div class="dim-item"><div class="dim-val" id="d-d">—</div><div class="dim-unit">METRE</div><div class="dim-name">ลึก</div></div>
     </div>
     <div class="pond-wrap">
-      <svg id="pond-svg-3d" viewBox="0 0 320 200" xmlns="http://www.w3.org/2000/svg"></svg>
+      <svg id="pond-svg-3d" viewBox="0 0 320 215" xmlns="http://www.w3.org/2000/svg"></svg>
       <div class="pond-legend">
         <span class="lg-item"><span class="lg-swatch actual"></span>บ่อลูกค้า</span>
         <span class="lg-item"><span class="lg-swatch ref"></span>บ่อมาตรฐาน (20×20×2 ม. = 1 กระสอบ)</span>
@@ -769,18 +769,23 @@ function drawPond3d(w,l,d) {
   const svg=document.getElementById('pond-svg-3d');
   function p(pts){return pts.map(pt=>pt[0]+','+pt[1]).join(' ');}
 
-  // กรอบพื้นที่วาด
-  const cx=120, cy=150; // จุดอ้างอิงมุมล่างซ้ายของฐาน (shared anchor)
-  const skx0=54, sky0=26; // perspective skew คงที่
+  const skx0=46, sky0=22; // perspective skew คงที่
 
-  // มาตราส่วน: หาตัวที่ใหญ่สุดในบรรดา w,l,d,REF_W,REF_L,REF_D เพื่อ fit ทั้งคู่ในกรอบ
-  const maxDim = Math.max(w,l,d,REF_W,REF_L,REF_D);
-  const scale = 95/maxDim; // 95px แทนค่ามากสุด
+  // มาตราส่วนพื้น (กว้าง/ยาว): ใช้ scale ของฐานที่ใหญ่กว่า (จริง vs มาตรฐาน) ให้ fit กรอบ
+  const maxFoot = Math.max(w, l, REF_W, REF_L);
+  const footScale = 130/maxFoot;
+
+  // มาตราส่วนความสูง (ลึก): แยกอิสระจากพื้น ไม่งั้นบ่อกว้างมากจะแบนจนมองไม่เห็น
+  // ใช้ scale ที่ทำให้บ่อที่ลึกที่สุด (จริง vs มาตรฐาน) สูงประมาณ 70px แต่มีขั้นต่ำไม่ให้บ่อเตี้ยจนเกินไป
+  const maxDepth = Math.max(d, REF_D);
+  const depthScale = Math.min(70/maxDepth, footScale*2.2);
+  const minVisibleHeight = 20; // px ขั้นต่ำเพื่อให้มองเห็นเป็น 3 มิติเสมอ
 
   function box(bw,bl,bd, ox,oy){
-    const pw=bw*scale, pl=bl*scale, ph=bd*scale;
-    // base footprint width/length mapped onto fixed skew amount proportional to pl
-    const skx = skx0*(pl/95), sky = sky0*(pl/95);
+    const pw=bw*footScale, pl=bl*footScale;
+    let ph = bd*depthScale;
+    if (ph < minVisibleHeight) ph = minVisibleHeight;
+    const skx = skx0*(pl/130), sky = sky0*(pl/130);
     const top=[[ox+skx,oy-ph],[ox+skx+pw,oy-ph],[ox+pw,oy-ph+sky],[ox,oy-ph+sky]];
     const front=[[ox,oy-ph+sky],[ox+pw,oy-ph+sky],[ox+pw,oy+sky],[ox,oy+sky]];
     const side=[[ox+pw,oy-ph+sky],[ox+pw+skx,oy-ph],[ox+pw+skx,oy],[ox+pw,oy+sky]];
@@ -788,7 +793,7 @@ function drawPond3d(w,l,d) {
   }
 
   // วางบ่อมาตรฐาน (เส้นประ) เป็นพื้นฐาน แล้ววางบ่อจริงซ้อนทับให้ฐานชิดมุมเดียวกัน
-  const baseX = 60, baseY = 168;
+  const baseX = 55, baseY = 165;
   const refB = box(REF_W, REF_L, REF_D, baseX, baseY);
   const actB = box(w, l, d, baseX, baseY);
 
@@ -824,21 +829,21 @@ function drawPond3d(w,l,d) {
     </defs>
 
     <!-- บ่อมาตรฐาน (เส้นประจาง) -->
-    <polygon points="${p(refB.top)}" fill="none" stroke="#5b6080" stroke-width="1.2" stroke-dasharray="3,2"/>
-    <polygon points="${p(refB.front)}" fill="none" stroke="#5b6080" stroke-width="1.2" stroke-dasharray="3,2"/>
-    <polygon points="${p(refB.side)}" fill="none" stroke="#5b6080" stroke-width="1.2" stroke-dasharray="3,2"/>
+    <polygon points="${p(refB.top)}" fill="none" stroke="#5b6080" stroke-width="1.3" stroke-dasharray="3,2"/>
+    <polygon points="${p(refB.front)}" fill="none" stroke="#5b6080" stroke-width="1.3" stroke-dasharray="3,2"/>
+    <polygon points="${p(refB.side)}" fill="none" stroke="#5b6080" stroke-width="1.3" stroke-dasharray="3,2"/>
 
     <!-- บ่อจริงของลูกค้า -->
-    <polygon points="${p(actB.top)}" fill="#1e2335" stroke="#6c63ff" stroke-width="1.3"/>
-    <polygon points="${p(waterPoly(actB))}" fill="url(#wg3d)" stroke="#38bdf8" stroke-width="0.8" opacity="0.92"/>
-    <polygon points="${p(actB.front)}" fill="none" stroke="#6c63ff" stroke-width="1.3"/>
-    <polygon points="${p(actB.side)}" fill="#1a1f35" stroke="#6c63ff" stroke-width="1.3" fill-opacity="0.4"/>
+    <polygon points="${p(actB.top)}" fill="#1e2335" stroke="#6c63ff" stroke-width="1.6"/>
+    <polygon points="${p(waterPoly(actB))}" fill="url(#wg3d)" stroke="#38bdf8" stroke-width="1" opacity="0.92"/>
+    <polygon points="${p(actB.front)}" fill="none" stroke="#6c63ff" stroke-width="1.6"/>
+    <polygon points="${p(actB.side)}" fill="#1a1f35" stroke="#6c63ff" stroke-width="1.6" fill-opacity="0.4"/>
 
-    <text x="${actB.ox+actB.pw/2+8}" y="${actB.oy-actB.ph*0.45}" fill="#38bdf8" font-size="11" text-anchor="middle" font-weight="600" font-family="IBM Plex Sans Thai,sans-serif" opacity="0.9">น้ำ</text>
+    <text x="${actB.ox+actB.pw/2+8}" y="${actB.oy-actB.ph*0.45}" fill="#38bdf8" font-size="12" text-anchor="middle" font-weight="600" font-family="IBM Plex Sans Thai,sans-serif" opacity="0.9">น้ำ</text>
 
     <!-- เส้นบอกขนาดบ่อจริง -->
-    <text x="${actB.ox+actB.pw/2}" y="${actB.oy+actB.sky+16}" fill="#8890aa" font-size="10" text-anchor="middle" font-family="IBM Plex Sans Thai,sans-serif">${w.toFixed(1)}×${l.toFixed(1)}×${d.toFixed(1)} ม.</text>
-    <text x="${refB.ox+refB.pw+refB.skx+8}" y="${refB.oy-refB.ph/2}" fill="#5b6080" font-size="9.5" text-anchor="start" font-family="IBM Plex Sans Thai,sans-serif">มาตรฐาน</text>
+    <text x="${actB.ox+actB.pw/2}" y="${actB.oy+actB.sky+18}" fill="#aab0c8" font-size="11" font-weight="500" text-anchor="middle" font-family="IBM Plex Sans Thai,sans-serif">${w.toFixed(1)}×${l.toFixed(1)}×${d.toFixed(1)} ม.</text>
+    <text x="${refB.ox+refB.pw+refB.skx+8}" y="${refB.oy-refB.ph/2}" fill="#5b6080" font-size="10" text-anchor="start" font-family="IBM Plex Sans Thai,sans-serif">มาตรฐาน</text>
   `;
 }
 </script>
